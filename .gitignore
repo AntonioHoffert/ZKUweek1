@@ -3,7 +3,8 @@ node_modules
 coverage
 coverage.json
 typechain
-
+.DS_Store
+*.ptau
 #Hardhat files
 cache
 artifacts

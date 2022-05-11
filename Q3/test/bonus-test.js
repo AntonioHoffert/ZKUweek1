@@ -23,7 +23,7 @@ function unstringifyBigInts(o) {
     }
 }
 
-describe("SystemOfEquations", function () {
+describe.skip("SystemOfEquations", function () {
     let Verifier;
     let verifier;
 
@@ -62,4 +62,33 @@ describe("SystemOfEquations", function () {
         let d = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         expect(await verifier.verifyProof(a, b, c, d)).to.be.false;
     });
+});
+    describe("LessThan10", function () {
+        let Verifier;
+        let verifier;
+    
+        beforeEach(async function () {
+            Verifier = await ethers.getContractFactory("LessThan10Verifier");
+            verifier = await Verifier.deploy();
+            await verifier.deployed();
+        });
+    
+        it("Should return true for correct proof", async function () {
+            //[assignment] Add comments to explain what each line is doing
+            const { proof, publicSignals } = await groth16.fullProve({
+                "a": "150"
+            },
+                "contracts/circuits/LessThan10/LessThan10_js/LessThan10.wasm","contracts/circuits/LessThan10/circuit_final.zkey");
+    
+            const editedPublicSignals = unstringifyBigInts(publicSignals);
+            const editedProof = unstringifyBigInts(proof);
+            const calldata = await groth16.exportSolidityCallData(editedProof, editedPublicSignals);
+        
+            const argv = calldata.replace(/["[\]\s]/g, "").split(',').map(x => BigInt(x).toString());
+        
+            const a = [argv[0]];
+            const Input = argv.slice(0);
+    
+            expect(await verifier.verifyProof(a, Input)).to.be.true;
+        });
 });
